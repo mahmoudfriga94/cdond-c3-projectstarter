@@ -193,7 +193,10 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            yum install -y ansible
+            git clone git@github.com:ansible/ansible.git
+            cd ansible
+            source ./hacking/env-setup
+            pip install paramiko PyYAML jinja2 --upgrade
       - run:
           name: Configure server
           command: |
