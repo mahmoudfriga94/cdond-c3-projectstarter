@@ -94,6 +94,71 @@ jobs:
              npm audit fix --force
              npm audit --audit-level=critical
 
+  deploy-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run: yum install -y tar gzip
+      - run:
+          name: Getting the old workflow id
+          command: |
+            # Fetch the Old workflow ID
+            export OldWorkflowID=$(aws cloudformation \
+            list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+            --no-paginate --output text)
+            echo OldWorkflowID: "${OldWorkflowID}"
+            echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
+            # storing old workflow id value in KVDB
+            curl https://kvdb.io/PaPoY6PLE4jpdZW9ZLbpwJ/OldWorkflowID_${CIRCLE_WORKFLOW_ID:0:7}  -d ${OldWorkflowID}
+            echo KVDB Old Workflow is: $(curl --insecure  https://kvdb.io/PaPoY6PLE4jpdZW9ZLbpwJ/OldWorkflowID_${CIRCLE_WORKFLOW_ID:0:7})
+            # Fetch the stack names
+            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
+                    --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
+            echo stacks: "${STACKS[@]}"
+            # storing Stacks value in KVDB
+            if [[ "${STACKS}"  != "" ]]
+            then
+              curl https://kvdb.io/PaPoY6PLE4jpdZW9ZLbpwJ/Stacks_${CIRCLE_WORKFLOW_ID:0:7}  -d ${STACKS}
+            else
+              curl https://kvdb.io/PaPoY6PLE4jpdZW9ZLbpwJ/Stacks_${CIRCLE_WORKFLOW_ID:0:7}  -d 0
+            fi
+            echo KVDB Stacks are: $(curl --insecure  https://kvdb.io/PaPoY6PLE4jpdZW9ZLbpwJ/Stacks_${CIRCLE_WORKFLOW_ID:0:7})
+
+      - run:
+          name: Ensure back-end infrastructure exists
+          command: |
+            # Use the workflow id to mark your CloudFormation stacks so that you can reference them later on (ex: rollback). 
+            aws cloudformation deploy \
+            --template-file .circleci/files/backend.yml \
+            --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
+            --tags project=udapeople
+      - run:
+          name: Ensure front-end infrastructure exist
+          command: |
+            # Use the workflow id to mark your CloudFormation stacks so that you can reference them later on (ex: rollback). 
+            aws cloudformation deploy \
+            --template-file .circleci/files/frontend.yml \
+            --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
+            --tags project=udapeople
+      - run:
+          name: Add back-end ip to ansible inventory
+          command: |
+            cd .circleci/ansible
+            aws ec2 describe-instances \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --output text >> inventory.txt
+            cat inventory.txt
+
+      - persist_to_workspace:
+          root: .
+          paths:
+                - .circleci/ansible/inventory.txt
+      - destroy-environment
+
 workflows:
   default:
     jobs:
@@ -107,4 +172,9 @@ workflows:
           requires: [build-backend]
       - scan-frontend:
           requires: [build-frontend]
+      - deploy-infrastructure:
+          requires: [test-frontend, test-backend, analyze-frontend, analyze-backend]
+          filters:
+            branches:
+              only: [master]
      
