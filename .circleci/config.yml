@@ -179,13 +179,9 @@ jobs:
       - destroy-environment
   configure-infrastructure:
     docker:
-      - image: amazon/aws-cli
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
-      - run:
-          name: Install tar utility
-          command: |
-            yum install -y tar gzip
       - add_ssh_keys:
           fingerprints: ["32:92:22:05:fd:d4:cc:a8:ed:75:d7:34:0e:d6:d9:76"]
       - attach_workspace:
@@ -193,10 +189,13 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            git clone git@github.com:ansible/ansible.git
-            cd ansible
-            source ./hacking/env-setup
-            pip install paramiko PyYAML jinja2 --upgrade
+            apk update
+            apk --no-cache add curl 
+            apk --no-cache add unzip 
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" 
+            unzip awscliv2.zip 
+            ./aws/install  
+            apk add --update ansible
       - run:
           name: Configure server
           command: |
