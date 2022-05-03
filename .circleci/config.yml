@@ -178,7 +178,8 @@ jobs:
                 - .circleci/ansible/inventory.txt
       - destroy-environment
   configure-infrastructure:
-    executor: python
+    docker:
+      - image: amazon/aws-cli
     steps:
       - checkout
       - add_ssh_keys:
