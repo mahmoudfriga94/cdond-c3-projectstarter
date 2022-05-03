@@ -3,7 +3,7 @@ version: 2.1
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
-    parameters:
+    #parameters:
       # Add parameter here   
     steps:
       - run:
@@ -11,11 +11,11 @@ commands:
           when: on_fail
           command: |
             # Your code here
-            exit 1
+            
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
-    parameters:
+    #parameters:
       # Add parameter here     
     steps:
       - run:
@@ -29,7 +29,6 @@ commands:
             #  cd ~/project/backend
             #  npm install
             #  Add revert code here. You can find this in the Getting Started section.
-              exit 1
             fi
             
 jobs:
@@ -112,7 +111,7 @@ jobs:
               #--tags project=your-tag \
               # --stack-name "your back-end stack name with workflow id" \
               # --parameter-overrides ID="your workflow id"  
-              exit 1
+              
       - run:
           name: Ensure front-end infrastructure exist
           command: |
@@ -121,12 +120,12 @@ jobs:
               #--tags project=your-tag \
               # --stack-name "your front-end stack name with workflow id" \
               # --parameter-overrides ID="your workflow id"  
-              exit 1
+              
       - run:
           name: Add back-end ip to ansible inventory
           command: |
             # Your code here
-            exit 1
+            
       - persist_to_workspace:
           root: ~/
           paths:
@@ -144,12 +143,10 @@ jobs:
           name: Install dependencies
           command: |
             # Your code here
-            exit 1
       - run:
           name: Configure server
           command: |
             # Your code here
-            exit 1
       # Here's where you will add some code to rollback on failure      
 
   run-migrations:
@@ -161,12 +158,10 @@ jobs:
           name: Run migrations
           command: |
             # Your code here
-            exit 1
       - run:
           name: Send migration results to memstash
           command: |
             # Your code here
-            exit 1
      # Here's where you will add some code to rollback on failure      
 
   deploy-frontend:
