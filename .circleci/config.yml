@@ -23,9 +23,9 @@ commands:
             sudo apt update
             sudo apt install python3.8
             curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-            python get-pip.py --user
-            python -m pip install --user ansible
-            python -m pip install --user paramiko
+            python3 get-pip.py --user
+            python3 -m pip install --user ansible
+            python3 -m pip install --user paramiko
 
 
   install_nodejs:
