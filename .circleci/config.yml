@@ -182,6 +182,12 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            yum update
+            yum install tar
+            yum install gzip
       - add_ssh_keys:
           fingerprints: ["32:92:22:05:fd:d4:cc:a8:ed:75:d7:34:0e:d6:d9:76"]
       - attach_workspace:
@@ -189,7 +195,6 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            yum update
             amazon-linux-extras list | grep ansible2
             amazon-linux-extras enable ansible2
             yum install -y ansible
