@@ -233,6 +233,7 @@ jobs:
             cd backend
             npm install
             npm audit fix --force
+            npm audit --audit-level=high
             npm run migrations > migrations_dump.txt
 
 
