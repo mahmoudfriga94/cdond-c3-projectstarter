@@ -243,6 +243,7 @@ jobs:
             fi
       - destroy-environment
       - revert-migrations
+
   deploy-frontend:
     docker:
       - image: cimg/base:stable
@@ -270,6 +271,7 @@ jobs:
           name: Deploy frontend objects
           command: |
             cd frontend
+            npm update
             npm run build
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       - destroy-environment
@@ -284,7 +286,7 @@ jobs:
       - install_ansible
       - install_nodejs
       - add_ssh_keys:
-          fingerprints: ["d5:a4:0d:bd:36:a7:d2:03:2c:10:93:6a:7c:d1:a7:26"]
+          fingerprints: ["32:92:22:05:fd:d4:cc:a8:ed:75:d7:34:0e:d6:d9:76"]
       - attach_workspace:
           at: ~/
       - restore_cache:
