@@ -332,7 +332,7 @@ jobs:
             --tags project=udapeople
       - destroy-environment
       - revert-migrations
-      
+
 workflows:
   default:
     jobs:
@@ -359,4 +359,7 @@ workflows:
           requires: [run-migrations]
       - deploy-backend:
           requires: [run-migrations]
+      - cloudfront-update:
+          requires: [deploy-backend, deploy-frontend]
+
      
