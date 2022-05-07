@@ -332,6 +332,36 @@ jobs:
             --tags project=udapeople
       - destroy-environment
       - revert-migrations
+      
+    cleanup:
+      docker:
+        - image: amazon/aws-cli
+      steps:
+        - checkout
+        - run:
+            name: Get old stack workflow id from KVDB and delete related stacks and files
+            command: |
+              
+              export OldWorkflowID=$(curl --insecure  https://kvdb.io/PaPoY6PLE4jpdZW9ZLbpwJ/OldWorkflowID_${CIRCLE_WORKFLOW_ID:0:7})
+              echo OldWorkflowID: "${OldWorkflowID}"
+              echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
+                      
+              export STACKS=$(curl --insecure  https://kvdb.io/PaPoY6PLE4jpdZW9ZLbpwJ/Stacks_${CIRCLE_WORKFLOW_ID:0:7})
+              echo Stacks: "${STACKS}"
+              if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
+              then
+                if [[ "${STACKS}"  != 0 ]]
+                then
+                  echo "cleanup is required"
+                  aws s3 rb "s3://udapeople-${OldWorkflowID}/" --force
+                  aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+                  aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+                else
+                  echo 'cleanup is not applicable'
+                fi
+              else  
+                echo 'cleanup is not applicable'
+              fi
 
 workflows:
   default:
@@ -361,5 +391,7 @@ workflows:
           requires: [run-migrations]
       - cloudfront-update:
           requires: [deploy-backend, deploy-frontend]
+      - cleanup:
+          requires: [cloudfront-update]
 
      
