@@ -13,9 +13,6 @@
   shell: |
     cd ~/backend-app
     npm i
-    npm audit fix --audit-level=critical --force
-    npm audit --audit-level=critical
-
 
 - name: "Executing Node app with PM2"
   shell: |
