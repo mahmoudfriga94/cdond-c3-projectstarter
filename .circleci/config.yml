@@ -134,31 +134,7 @@ jobs:
     steps:
       - checkout
       - run: yum install -y tar gzip
-      - run:
-          name: Getting the old workflow id
-          command: |
-            # Fetch the Old workflow ID
-            export OldWorkflowID=$(aws cloudformation \
-            list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
-            --no-paginate --output text)
-            echo OldWorkflowID: "${OldWorkflowID}"
-            echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
-            # storing old workflow id value in KVDB
-            curl https://kvdb.io/PaPoY6PLE4jpdZW9ZLbpwJ/OldWorkflowID_${CIRCLE_WORKFLOW_ID:0:7}  -d ${OldWorkflowID}
-            echo KVDB Old Workflow is: $(curl --insecure  https://kvdb.io/PaPoY6PLE4jpdZW9ZLbpwJ/OldWorkflowID_${CIRCLE_WORKFLOW_ID:0:7})
-            # Fetch the stack names
-            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
-                    --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
-            echo stacks: "${STACKS[@]}"
-            # storing Stacks value in KVDB
-            if [[ "${STACKS}"  != "" ]]
-            then
-              curl https://kvdb.io/PaPoY6PLE4jpdZW9ZLbpwJ/Stacks_${CIRCLE_WORKFLOW_ID:0:7}  -d ${STACKS}
-            else
-              curl https://kvdb.io/PaPoY6PLE4jpdZW9ZLbpwJ/Stacks_${CIRCLE_WORKFLOW_ID:0:7}  -d 0
-            fi
-            echo KVDB Stacks are: $(curl --insecure  https://kvdb.io/PaPoY6PLE4jpdZW9ZLbpwJ/Stacks_${CIRCLE_WORKFLOW_ID:0:7})
-
+      
       - run:
           name: Ensure back-end infrastructure exists
           command: |
